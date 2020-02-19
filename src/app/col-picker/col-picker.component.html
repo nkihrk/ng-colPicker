@@ -1,0 +1,62 @@
+<div class="window">
+  <div class="window-header">
+    <div class="close">
+      <div class="close-button">
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+    <div class="tab">
+      <div class="tab-name">カラー</div>
+      <div class="menu">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+  <div class="window-content">
+    <div class="color-slider">
+      <div class="selected-color">
+        <div class="color-box-1"></div>
+        <div class="box-selected-1"></div>
+        <div class="color-box-2"></div>
+        <div class="box-selected-2"></div>
+      </div>
+      <div class="sliders">
+        <div class="slider">
+          <div class="slider-title">H</div>
+          <div #sliderColor class="slider-color">
+            <canvas #canvasH></canvas>
+          </div>
+          <div class="slider-value"><input type="text" />&nbsp;°</div>
+        </div>
+        <div class="slider">
+          <div class="slider-title">S</div>
+          <div class="slider-color">
+            <canvas #canvasS></canvas>
+          </div>
+          <div class="slider-value"><input type="text" />&nbsp;%</div>
+        </div>
+        <div class="slider">
+          <div class="slider-title">B</div>
+          <div class="slider-color">
+            <canvas #canvasB></canvas>
+          </div>
+          <div class="slider-value"><input type="text" />&nbsp;%</div>
+        </div>
+      </div>
+    </div>
+    <div #colpick class="color-picker">
+      <svg
+        #colorWheel
+        class="color-wheel"
+        viewbox="0 0 200 200"
+        version="1.1"
+      ></svg>
+      <canvas #colorTriangle class="color-triangle"></canvas>
+    </div>
+  </div>
+  <div class="window-footer"></div>
+</div>
