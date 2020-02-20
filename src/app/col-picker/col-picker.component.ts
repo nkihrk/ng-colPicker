@@ -9,6 +9,9 @@ export class ColPickerComponent implements OnInit {
   @ViewChild("colpick", { static: true }) wrapper: ElementRef;
   @ViewChild("colorWheel", { static: true }) wheel: ElementRef;
   @ViewChild("sliderColor", { static: true }) sliderColor: ElementRef;
+  @ViewChild("inputH", { static: true }) inputH: ElementRef;
+  @ViewChild("inputS", { static: true }) inputS: ElementRef;
+  @ViewChild("inputB", { static: true }) inputB: ElementRef;
   @ViewChild("canvasH", { static: true }) canvasH: ElementRef<
     HTMLCanvasElement
   >;
@@ -28,9 +31,9 @@ export class ColPickerComponent implements OnInit {
     const wrapper = this.wrapper.nativeElement;
     const size = wrapper.clientWidth;
     const wheelRadius = size / 2;
-    const wheelThickness = (size / 2) * 0.18;
+    const wheelThickness = (size / 2) * 0.16;
     const wheelInnerRadius = wheelRadius - wheelThickness;
-    const triangleRadius = (wheelRadius - wheelThickness) * 0.95;
+    const triangleRadius = (wheelRadius - wheelThickness) * 0.99;
     const originX = wrapper.style.left;
     const originY = wrapper.style.top;
     const centerX = originX + size / 2;
@@ -92,6 +95,8 @@ export class ColPickerComponent implements OnInit {
     ctx.strokeStyle = "white";
     ctx.fillStyle = "white";
     ctx.fill();
+
+    this.inputH.nativeElement.value = 0;
   }
 
   _drawSaturation() {
@@ -121,6 +126,8 @@ export class ColPickerComponent implements OnInit {
     ctx.strokeStyle = "white";
     ctx.fillStyle = "white";
     ctx.fill();
+
+    this.inputS.nativeElement.value = 0;
   }
 
   _drawBrightness() {
@@ -135,7 +142,7 @@ export class ColPickerComponent implements OnInit {
     ctx.fillStyle = grd;
     ctx.fillRect(5, 3, c.width - 10, 6);
 
-    const pos: number = this.brightPos + 6;
+    const pos: number = c.width - 6;
 
     ctx.beginPath();
     ctx.moveTo(pos, 10);
@@ -150,6 +157,8 @@ export class ColPickerComponent implements OnInit {
     ctx.strokeStyle = "white";
     ctx.fillStyle = "white";
     ctx.fill();
+
+    this.inputB.nativeElement.value = 100;
   }
 
   /**
@@ -366,7 +375,7 @@ export class ColPickerComponent implements OnInit {
     ctx.lineTo(this.triangleRadius, 0);
     ctx.lineTo(leftTopX, -leftTopY);
     ctx.closePath();
-    ctx.stroke();
+    // ctx.stroke();
     ctx.clip();
     ctx.fillRect(
       -this.radius,
@@ -403,10 +412,18 @@ export class ColPickerComponent implements OnInit {
       this.wrapperWidth,
       this.wrapperWidth
     );
-
     ctx.restore();
 
+    // Triangle
     ctx.beginPath();
+    ctx.translate(this.radius, this.radius);
+    ctx.arc(leftTopX, -leftTopY, 5, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    // Wheel
+    ctx.beginPath();
+    ctx.strokeStyle = "white";
+    ctx.arc(0, -(this.innerRadius + this.thickness / 2), 5, 0, 2 * Math.PI);
     ctx.stroke();
   }
 
