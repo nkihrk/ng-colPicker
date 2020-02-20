@@ -4,8 +4,17 @@
   overflow: hidden;
   width: 300px;
   color: rgba($color: white, $alpha: 0.8);
-  // user-select: none;
+  user-select: none;
   box-shadow: -3px 3px 5px rgba(0, 0, 0, 0.3);
+
+  canvas {
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    image-rendering: pixelated;
+    -ms-interpolation-mode: nearest-neighbor;
+  }
 
   .window-header {
     width: 100%;
@@ -23,6 +32,7 @@
         position: relative;
         width: 20px;
         height: 10px;
+        box-sizing: content-box;
 
         &:hover {
           height: 100%;
@@ -69,10 +79,10 @@
         border-radius: 1px 1px 0 0;
         border-bottom: none;
         background-color: #535353;
-        letter-spacing: -0.2rem;
+        letter-spacing: 0rem;
         text-align: center;
         line-height: 1.5rem;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
       }
 
       .menu {
@@ -106,7 +116,7 @@
     position: relative;
     width: 100%;
     border-top: solid 1px #3b3b3b;
-    padding: 10px 0;
+    padding: 13px 0;
 
     display: flex;
     align-items: center;
@@ -185,10 +195,10 @@
         .slider {
           width: 100%;
           height: 20px;
-          margin-bottom: 6px;
           display: flex;
           align-items: center;
           justify-content: space-between;
+          margin-bottom: 5px;
 
           .slider-title {
             width: 10px;
@@ -197,7 +207,7 @@
           }
 
           .slider-color {
-            width: calc(100% - 80px);
+            width: calc(100% - 60px);
             height: 100%;
             // background-color: white;
             line-height: 0;
@@ -210,7 +220,7 @@
 
           .slider-value {
             width: 50px;
-            height: 20px;
+            height: 21px;
             display: inline-flex;
             flex-wrap: nowrap;
             font-size: 0.8rem;
@@ -224,6 +234,7 @@
               padding: 0 4px;
               font-size: 0.7rem;
               color: white;
+              user-select: initial;
             }
           }
         }

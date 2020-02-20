@@ -49,11 +49,9 @@ export class ColPickerComponent implements OnInit {
     this._drawBrightness();
   }
 
-  options: {
-    HUE: 0;
-    RGB: [0, 0, 0];
-    THETA: 0;
-  };
+  private huePos: number = 0;
+  private saturatePos: number = 0;
+  private brightPos: number = 0;
 
   private wrapperWidth: number;
   private radius: number;
@@ -68,7 +66,7 @@ export class ColPickerComponent implements OnInit {
     c.height = this.sliderColor.nativeElement.clientHeight;
     const ctx = c.getContext("2d");
 
-    const grd = ctx.createLinearGradient(0, 0, c.width, 0);
+    const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
     grd.addColorStop(0, "rgb(255,   0,   0)");
     grd.addColorStop(0.15, "rgb(255, 255,   0)");
     grd.addColorStop(0.33, "rgb(0,   255,   0)");
@@ -77,7 +75,23 @@ export class ColPickerComponent implements OnInit {
     grd.addColorStop(0.84, "rgb(255,   0, 255)");
     grd.addColorStop(1, "rgb(255,   0,   0)");
     ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, c.width, 6);
+    ctx.fillRect(5, 3, c.width - 10, 6);
+
+    const pos: number = this.huePos + 6;
+
+    ctx.beginPath();
+    ctx.moveTo(pos, 10);
+    ctx.lineTo(pos - 5, 16);
+    ctx.lineTo(pos - 5, 19);
+    ctx.lineTo(pos - 4, 20);
+    ctx.lineTo(pos + 4, 20);
+    ctx.lineTo(pos + 5, 19);
+    ctx.lineTo(pos + 5, 16);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.strokeStyle = "white";
+    ctx.fillStyle = "white";
+    ctx.fill();
   }
 
   _drawSaturation() {
@@ -86,11 +100,27 @@ export class ColPickerComponent implements OnInit {
     c.height = this.sliderColor.nativeElement.clientHeight;
     const ctx = c.getContext("2d");
 
-    const grd = ctx.createLinearGradient(0, 0, c.width, 0);
+    const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
     grd.addColorStop(0, "white");
     grd.addColorStop(1, "red");
     ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, c.width, 6);
+    ctx.fillRect(5, 3, c.width - 10, 6);
+
+    const pos: number = this.saturatePos + 6;
+
+    ctx.beginPath();
+    ctx.moveTo(pos, 10);
+    ctx.lineTo(pos - 5, 16);
+    ctx.lineTo(pos - 5, 19);
+    ctx.lineTo(pos - 4, 20);
+    ctx.lineTo(pos + 4, 20);
+    ctx.lineTo(pos + 5, 19);
+    ctx.lineTo(pos + 5, 16);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.strokeStyle = "white";
+    ctx.fillStyle = "white";
+    ctx.fill();
   }
 
   _drawBrightness() {
@@ -99,11 +129,27 @@ export class ColPickerComponent implements OnInit {
     c.height = this.sliderColor.nativeElement.clientHeight;
     const ctx = c.getContext("2d");
 
-    const grd = ctx.createLinearGradient(0, 0, c.width, 0);
+    const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
     grd.addColorStop(0, "black");
     grd.addColorStop(1, "white");
     ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, c.width, 6);
+    ctx.fillRect(5, 3, c.width - 10, 6);
+
+    const pos: number = this.brightPos + 6;
+
+    ctx.beginPath();
+    ctx.moveTo(pos, 10);
+    ctx.lineTo(pos - 5, 16);
+    ctx.lineTo(pos - 5, 19);
+    ctx.lineTo(pos - 4, 20);
+    ctx.lineTo(pos + 4, 20);
+    ctx.lineTo(pos + 5, 19);
+    ctx.lineTo(pos + 5, 16);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.strokeStyle = "white";
+    ctx.fillStyle = "white";
+    ctx.fill();
   }
 
   /**
@@ -359,6 +405,9 @@ export class ColPickerComponent implements OnInit {
     );
 
     ctx.restore();
+
+    ctx.beginPath();
+    ctx.stroke();
   }
 
   // _updateTriangle() {
