@@ -81,20 +81,7 @@ export class ColPickerComponent implements OnInit {
     ctx.fillRect(5, 3, c.width - 10, 6);
 
     const pos: number = this.huePos + 6;
-
-    ctx.beginPath();
-    ctx.moveTo(pos, 10);
-    ctx.lineTo(pos - 5, 16);
-    ctx.lineTo(pos - 5, 19);
-    ctx.lineTo(pos - 4, 20);
-    ctx.lineTo(pos + 4, 20);
-    ctx.lineTo(pos + 5, 19);
-    ctx.lineTo(pos + 5, 16);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.strokeStyle = "white";
-    ctx.fillStyle = "white";
-    ctx.fill();
+    this._showSelectBar(ctx, pos);
 
     this.inputH.nativeElement.value = 0;
   }
@@ -112,20 +99,7 @@ export class ColPickerComponent implements OnInit {
     ctx.fillRect(5, 3, c.width - 10, 6);
 
     const pos: number = this.saturatePos + 6;
-
-    ctx.beginPath();
-    ctx.moveTo(pos, 10);
-    ctx.lineTo(pos - 5, 16);
-    ctx.lineTo(pos - 5, 19);
-    ctx.lineTo(pos - 4, 20);
-    ctx.lineTo(pos + 4, 20);
-    ctx.lineTo(pos + 5, 19);
-    ctx.lineTo(pos + 5, 16);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.strokeStyle = "white";
-    ctx.fillStyle = "white";
-    ctx.fill();
+    this._showSelectBar(ctx, pos);
 
     this.inputS.nativeElement.value = 0;
   }
@@ -143,7 +117,12 @@ export class ColPickerComponent implements OnInit {
     ctx.fillRect(5, 3, c.width - 10, 6);
 
     const pos: number = c.width - 6;
+    this._showSelectBar(ctx, pos);
 
+    this.inputB.nativeElement.value = 100;
+  }
+
+  _showSelectBar(ctx: any, pos: number) {
     ctx.beginPath();
     ctx.moveTo(pos, 10);
     ctx.lineTo(pos - 5, 16);
@@ -157,8 +136,6 @@ export class ColPickerComponent implements OnInit {
     ctx.strokeStyle = "white";
     ctx.fillStyle = "white";
     ctx.fill();
-
-    this.inputB.nativeElement.value = 100;
   }
 
   /**
@@ -423,7 +400,7 @@ export class ColPickerComponent implements OnInit {
     // Wheel
     ctx.beginPath();
     ctx.strokeStyle = "white";
-    ctx.arc(0, -(this.innerRadius + this.thickness / 2), 5, 0, 2 * Math.PI);
+    ctx.arc(0, -(this.innerRadius + this.thickness / 2), 6, 0, 2 * Math.PI);
     ctx.stroke();
   }
 
