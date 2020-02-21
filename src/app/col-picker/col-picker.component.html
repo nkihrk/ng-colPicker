@@ -19,7 +19,7 @@
   <div class="window-content">
     <div class="color-slider">
       <div class="selected-color">
-        <div class="color-box-1"></div>
+        <div #colorBox1 class="color-box-1"></div>
         <div class="box-selected-1"></div>
         <div class="color-box-2"></div>
         <div class="box-selected-2"></div>
@@ -55,7 +55,13 @@
         viewbox="0 0 200 200"
         version="1.1"
       ></svg>
-      <canvas #colorTriangle class="color-triangle"></canvas>
+      <canvas
+        #colorTriangle
+        id="color-triangle"
+        class="color-triangle"
+        appEvent
+        (coord)="drawTriangle($event)"
+      ></canvas>
     </div>
   </div>
   <div class="window-footer"></div>

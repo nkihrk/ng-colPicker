@@ -1,3 +1,3 @@
-<div class="container">
-  <app-col-picker></app-col-picker>
+<div #container class="container">
+  <app-col-picker (currentColor)="setBgColor($event)"></app-col-picker>
 </div>

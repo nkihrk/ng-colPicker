@@ -1,4 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  Output,
+  EventEmitter
+} from "@angular/core";
 
 @Component({
   selector: "app-col-picker",
@@ -6,6 +13,7 @@ import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
   styleUrls: ["./col-picker.component.scss"]
 })
 export class ColPickerComponent implements OnInit {
+  @ViewChild("colorBox1", { static: true }) colorBox1: ElementRef;
   @ViewChild("colpick", { static: true }) wrapper: ElementRef;
   @ViewChild("colorWheel", { static: true }) wheel: ElementRef;
   @ViewChild("sliderColor", { static: true }) sliderColor: ElementRef;
@@ -25,6 +33,19 @@ export class ColPickerComponent implements OnInit {
     HTMLCanvasElement
   >;
 
+  @Output() currentColor = new EventEmitter<any>();
+
+  private hue: number = 0;
+
+  private wrapperWidth: number;
+  private wheelOuterRadius: number;
+  private wheelInnerRadius: number;
+  private thickness: number;
+  private canvasColor: string = "#535353";
+  private triangleRadius: number;
+  private centerX: number;
+  private centerY: number;
+
   constructor() {}
 
   ngOnInit() {
@@ -34,36 +55,27 @@ export class ColPickerComponent implements OnInit {
     const wheelThickness = (size / 2) * 0.16;
     const wheelInnerRadius = wheelRadius - wheelThickness;
     const triangleRadius = (wheelRadius - wheelThickness) * 0.99;
-    const originX = wrapper.style.left;
-    const originY = wrapper.style.top;
+    const originX = wrapper.getBoundingClientRect().left;
+    const originY = wrapper.getBoundingClientRect().top;
     const centerX = originX + size / 2;
     const centerY = originY + size / 2;
 
     this.wrapperWidth = size;
-    this.radius = wheelRadius;
-    this.innerRadius = wheelInnerRadius;
+    this.wheelOuterRadius = wheelRadius;
+    this.wheelInnerRadius = wheelInnerRadius;
     this.thickness = wheelThickness;
     this.triangleRadius = triangleRadius;
+    this.centerX = centerX;
+    this.centerY = centerY;
 
     this.drawWheel();
-    this.drawTriangle();
-    this._drawHue();
-    this._drawSaturation();
-    this._drawBrightness();
+    this.drawTriangle({});
+    this.drawHue(0);
+    this.drawSaturation(0, { h: 0, s: 0, b: 100 });
+    this.drawBrightness(100, { h: 0, s: 0, b: 0 });
   }
 
-  private huePos: number = 0;
-  private saturatePos: number = 0;
-  private brightPos: number = 0;
-
-  private wrapperWidth: number;
-  private radius: number;
-  private innerRadius: number;
-  private thickness: number;
-  private canvasColor: string = "#535353";
-  private triangleRadius: number;
-
-  _drawHue() {
+  drawHue(val) {
     const c = this.canvasH.nativeElement;
     c.width = this.sliderColor.nativeElement.clientWidth;
     c.height = this.sliderColor.nativeElement.clientHeight;
@@ -80,46 +92,86 @@ export class ColPickerComponent implements OnInit {
     ctx.fillStyle = grd;
     ctx.fillRect(5, 3, c.width - 10, 6);
 
-    const pos: number = this.huePos + 6;
+    const pos: number = (val / 360) * (c.width - 13) + 6;
     this._showSelectBar(ctx, pos);
 
-    this.inputH.nativeElement.value = 0;
+    this.inputH.nativeElement.value = val;
   }
 
-  _drawSaturation() {
+  drawSaturation(val, hsb) {
     const c = this.canvasS.nativeElement;
     c.width = this.sliderColor.nativeElement.clientWidth;
     c.height = this.sliderColor.nativeElement.clientHeight;
     const ctx = c.getContext("2d");
 
+    const hsl0 = this._hsv2hsl(hsb.h / 360, 1, hsb.b / 100);
+    const hsl1 = this._hsv2hsl(hsb.h / 360, 0, hsb.b / 100);
     const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
-    grd.addColorStop(0, "white");
-    grd.addColorStop(1, "red");
+    grd.addColorStop(
+      1,
+      `hsl(${Math.floor(hsl0[0])}, ${Math.floor(hsl0[1] * 100)}%, ${Math.floor(
+        hsl0[2] * 100
+      )}%)`
+    );
+    grd.addColorStop(
+      0,
+      `hsl(${Math.floor(hsl1[0])}, ${Math.floor(hsl1[1] * 100)}%, ${Math.floor(
+        hsl1[2] * 100
+      )}%)`
+    );
     ctx.fillStyle = grd;
     ctx.fillRect(5, 3, c.width - 10, 6);
 
-    const pos: number = this.saturatePos + 6;
+    const pos: number = (val / 100) * (c.width - 13) + 6;
     this._showSelectBar(ctx, pos);
 
-    this.inputS.nativeElement.value = 0;
+    this.inputS.nativeElement.value = val;
   }
 
-  _drawBrightness() {
+  drawBrightness(val, hsb) {
     const c = this.canvasB.nativeElement;
     c.width = this.sliderColor.nativeElement.clientWidth;
     c.height = this.sliderColor.nativeElement.clientHeight;
     const ctx = c.getContext("2d");
 
+    const hsl0 = this._hsv2hsl(hsb.h / 360, hsb.s / 100, 1);
+    const hsl1 = this._hsv2hsl(hsb.h / 360, hsb.s / 100, 0);
     const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
-    grd.addColorStop(0, "black");
-    grd.addColorStop(1, "white");
+    grd.addColorStop(
+      1,
+      `hsl(${Math.floor(hsl0[0])}, ${Math.floor(hsl0[1] * 100)}%, ${Math.floor(
+        hsl0[2] * 100
+      )}%)`
+    );
+    grd.addColorStop(
+      0,
+      `hsl(${Math.floor(hsl1[0])}, ${Math.floor(hsl1[1] * 100)}%, ${Math.floor(
+        hsl1[2] * 100
+      )}%)`
+    );
     ctx.fillStyle = grd;
     ctx.fillRect(5, 3, c.width - 10, 6);
 
-    const pos: number = c.width - 6;
+    const pos: number = (val / 100) * (c.width - 13) + 6;
     this._showSelectBar(ctx, pos);
 
-    this.inputB.nativeElement.value = 100;
+    this.inputB.nativeElement.value = val;
+  }
+
+  _hsv2hsl(h, s, v) {
+    const l = ((2 - s) * v) / 2;
+
+    if (l != 0) {
+      if (l == 1) {
+        s = 0;
+      } else if (l < 0.5) {
+        s = (s * v) / (l * 2);
+      } else {
+        s = (s * v) / (2 - l * 2);
+      }
+    }
+
+    return [h, s, l];
   }
 
   _showSelectBar(ctx: any, pos: number) {
@@ -144,18 +196,18 @@ export class ColPickerComponent implements OnInit {
    */
   drawWheel() {
     const resolution = 1;
-    const outerRadius = this.radius;
-    const innerRadius = this.innerRadius;
+    const outerRadius = this.wheelOuterRadius;
+    const wheelInnerRadius = this.wheelInnerRadius;
     const root = this.wheel;
 
     // this._createWheelCircle();
     this._generateConicGradiant(outerRadius, resolution, root);
-    this._generateOverlay(outerRadius, innerRadius, root);
+    this._generateOverlay(outerRadius, wheelInnerRadius, root);
   }
 
   //
 
-  _generateOverlay(outerRadius, innerRadius, target) {
+  _generateOverlay(outerRadius, wheelInnerRadius, target) {
     const circle = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "circle"
@@ -163,13 +215,13 @@ export class ColPickerComponent implements OnInit {
 
     circle.setAttribute("cx", outerRadius);
     circle.setAttribute("cy", outerRadius);
-    circle.setAttribute("r", innerRadius);
+    circle.setAttribute("r", wheelInnerRadius);
     circle.setAttribute("fill", this.canvasColor);
 
     target.nativeElement.appendChild(circle);
   }
 
-  _generateConicGradiant(radius, resolution, target) {
+  _generateConicGradiant(wheelOuterRadius, resolution, target) {
     for (let i = 0; i < 360 * resolution; i++) {
       const path = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -179,9 +231,9 @@ export class ColPickerComponent implements OnInit {
       path.setAttribute(
         "d",
         this._describeArc(
-          radius,
-          radius,
-          radius,
+          wheelOuterRadius,
+          wheelOuterRadius,
+          wheelOuterRadius,
           i / resolution,
           (i + 2) / resolution
         )
@@ -192,9 +244,9 @@ export class ColPickerComponent implements OnInit {
     }
   }
 
-  _describeArc(x, y, radius, startAngle, endAngle) {
-    const start = this._polar2Cartesian(x, y, radius, endAngle);
-    const end = this._polar2Cartesian(x, y, radius, startAngle);
+  _describeArc(x, y, wheelOuterRadius, startAngle, endAngle) {
+    const start = this._polar2Cartesian(x, y, wheelOuterRadius, endAngle);
+    const end = this._polar2Cartesian(x, y, wheelOuterRadius, startAngle);
 
     const arcSweep = endAngle - startAngle <= 180 ? "0" : "1";
 
@@ -203,8 +255,8 @@ export class ColPickerComponent implements OnInit {
       start.x,
       start.y,
       "A",
-      radius,
-      radius,
+      wheelOuterRadius,
+      wheelOuterRadius,
       0,
       arcSweep,
       0,
@@ -221,18 +273,18 @@ export class ColPickerComponent implements OnInit {
     return setD;
   }
 
-  _polar2Cartesian(centerX, centerY, radius, angleInDegrees) {
+  _polar2Cartesian(centerX, centerY, wheelOuterRadius, angleInDegrees) {
     const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
 
     return {
-      x: centerX + radius * Math.cos(angleInRadians),
-      y: centerY + radius * Math.sin(angleInRadians)
+      x: centerX + wheelOuterRadius * Math.cos(angleInRadians),
+      y: centerY + wheelOuterRadius * Math.sin(angleInRadians)
     };
   }
 
   // _createWheelCircle() {
   //   const wheelCircle = document.createElement('div');
-  //   const r = this.innerRadius + this.thickness / 2;
+  //   const r = this.wheelInnerRadius + this.thickness / 2;
   //   const left =
   //     r * Math.cos(this.options.THETA + (3 / 2) * Math.PI) + this.wrapperWidth / 2;
   //   const top =
@@ -252,8 +304,8 @@ export class ColPickerComponent implements OnInit {
   // }
 
   // _isWheelArea(e) {
-  //   const minR = this.colorWheel.innerRadius;
-  //   const maxR = this.colorWheel.radius;
+  //   const minR = this.colorWheel.wheelInnerRadius;
+  //   const maxR = this.colorWheel.wheelOuterRadius;
   //   const mouseR = LibEve.getDistance(
   //     this.param.centerPos.x,
   //     this.param.centerPos.y,
@@ -267,7 +319,7 @@ export class ColPickerComponent implements OnInit {
 
   // _updateWheelCircle(e) {
   //   const pointer = this.wheelCircle;
-  //   const r = this.colorWheel.innerRadius + this.colorWheel.thickness / 2;
+  //   const r = this.colorWheel.wheelInnerRadius + this.colorWheel.thickness / 2;
   //   const theta = this._calculateTheta(e);
   //   const left = r * Math.cos(theta) + this.param.size / 2;
   //   const top = r * Math.sin(theta) + this.param.size / 2;
@@ -329,12 +381,8 @@ export class ColPickerComponent implements OnInit {
    * Color triangle
    *
    */
-  drawTriangle() {
-    this._initTriangle();
-    // this._getTriangleColor();
-  }
 
-  _initTriangle() {
+  drawTriangle($coord: any) {
     const c = this.triangle.nativeElement;
     c.width = this.wrapperWidth;
     c.height = this.wrapperWidth;
@@ -345,18 +393,18 @@ export class ColPickerComponent implements OnInit {
 
     ctx.clearRect(0, 0, this.wrapperWidth, this.wrapperWidth);
     ctx.save();
-    ctx.translate(this.radius, this.radius);
+    ctx.translate(this.wheelOuterRadius, this.wheelOuterRadius);
 
     ctx.beginPath();
     ctx.moveTo(leftTopX, leftTopY);
     ctx.lineTo(this.triangleRadius, 0);
     ctx.lineTo(leftTopX, -leftTopY);
     ctx.closePath();
-    // ctx.stroke();
+    ctx.stroke();
     ctx.clip();
     ctx.fillRect(
-      -this.radius,
-      -this.radius,
+      -this.wheelOuterRadius,
+      -this.wheelOuterRadius,
       this.wrapperWidth,
       this.wrapperWidth
     );
@@ -367,8 +415,8 @@ export class ColPickerComponent implements OnInit {
     grad0.addColorStop(1, `${hsla}0)`);
     ctx.fillStyle = grad0;
     ctx.fillRect(
-      -this.radius,
-      -this.radius,
+      -this.wheelOuterRadius,
+      -this.wheelOuterRadius,
       this.wrapperWidth,
       this.wrapperWidth
     );
@@ -384,29 +432,64 @@ export class ColPickerComponent implements OnInit {
     ctx.globalCompositeOperation = "lighter";
     ctx.fillStyle = grad1;
     ctx.fillRect(
-      -this.radius,
-      -this.radius,
+      -this.wheelOuterRadius,
+      -this.wheelOuterRadius,
       this.wrapperWidth,
       this.wrapperWidth
     );
     ctx.restore();
 
+    if (Object.keys($coord).length) {
+      const isTriangleArea = this._isTriangleArea($coord);
+      if (isTriangleArea) {
+        const mouseX = $coord.x - this.centerX;
+        const mouseY = $coord.y - this.centerY;
+        const rgb = this._getRgb(mouseX, mouseY);
+        const hsb = this._rgb2hsb(rgb[0], rgb[1], rgb[2]);
+        this._drawCircleTriangle(ctx, mouseX, mouseY);
+        this._getRgb(mouseX, mouseY);
+        this._setHsb(hsb, rgb);
+        // Just for now
+        this._drawCircleWheel(ctx);
+      } else {
+        this._updateTriangleCircle(ctx, $coord);
+        // Just for now
+        this._drawCircleWheel(ctx);
+      }
+    } else {
+      // Triangle
+      this._drawCircleTriangle(ctx, leftTopX, -leftTopY);
+      this._getRgb(leftTopX, -leftTopY);
+      // Just for now
+      this._drawCircleWheel(ctx);
+    }
+  }
+
+  _drawCircleTriangle(ctx, mouseX, mouseY) {
     // Triangle
     ctx.beginPath();
-    ctx.translate(this.radius, this.radius);
-    ctx.arc(leftTopX, -leftTopY, 5, 0, 2 * Math.PI);
+    ctx.translate(this.wheelOuterRadius, this.wheelOuterRadius);
+    ctx.arc(mouseX, mouseY, 5, 0, 2 * Math.PI);
     ctx.stroke();
+  }
 
+  _drawCircleWheel(ctx: CanvasRenderingContext2D) {
     // Wheel
     ctx.beginPath();
     ctx.strokeStyle = "white";
-    ctx.arc(0, -(this.innerRadius + this.thickness / 2), 6, 0, 2 * Math.PI);
+    ctx.arc(
+      0,
+      -(this.wheelInnerRadius + this.thickness / 2),
+      6,
+      0,
+      2 * Math.PI
+    );
     ctx.stroke();
   }
 
   // _updateTriangle() {
   //   this._initTriangle();
-  //   this._setRgb('#color-triangle-circle');
+  //   this._getRgb('#color-triangle-circle');
   // }
 
   // _createTriangleCircle() {
@@ -417,7 +500,7 @@ export class ColPickerComponent implements OnInit {
 
   //   this.triangleCircle = triangleCircle;
   //   this.param.container.appendChild(triangleCircle);
-  //   this._setRgb('#color-triangle-circle');
+  //   this._getRgb('#color-triangle-circle');
   // }
 
   // _colorTriangleArea(e) {
@@ -425,116 +508,175 @@ export class ColPickerComponent implements OnInit {
   //   if (isTriangleArea) this._updateTriangleCircle(e);
   // }
 
-  // _isTriangleArea(e) {
-  //   const mouseX = e.clientX - this.param.centerPos.x;
-  //   const mouseY = e.clientY - this.param.centerPos.y;
-  //   const minX = Math.cos((Math.PI * 2) / 3) * this.colorTriangle.radius;
-  //   const maxX = this.colorTriangle.radius;
-  //   const maxY = (-mouseX + maxX) / Math.sqrt(3);
+  _isTriangleArea(e) {
+    const mouseX = e.x - this.centerX;
+    const mouseY = e.y - this.centerY;
+    const minX = Math.cos((Math.PI * 2) / 3) * this.wheelInnerRadius;
+    const maxX = this.wheelInnerRadius;
+    const maxY = (-mouseX + maxX) / Math.sqrt(3);
 
-  //   if (mouseX > minX && maxX > mouseX) {
-  //     if (Math.abs(mouseY) >= 0 && maxY >= Math.abs(mouseY)) return true;
-  //   }
-  //   return false;
-  // }
+    if (mouseX > minX && maxX > mouseX) {
+      if (Math.abs(mouseY) >= 0 && maxY >= Math.abs(mouseY)) return true;
+    }
+    return false;
+  }
 
-  // _updateTriangleCircle(e) {
-  //   const mouseX = e.clientX - this.param.centerPos.x;
-  //   const mouseY = e.clientY - this.param.centerPos.y;
+  _updateTriangleCircle(ctx, e) {
+    let x, y;
+    const mouseX = e.x - this.centerX;
+    const mouseY = e.y - this.centerY;
 
-  //   const minX = Math.cos((Math.PI * 2) / 3) * this.colorTriangle.radius;
-  //   const maxX = this.colorTriangle.radius;
-  //   let minY = (mouseX - maxX) / Math.sqrt(3);
-  //   let maxY = (-mouseX + maxX) / Math.sqrt(3);
-  //   minY =
-  //     mouseX <= minX
-  //       ? -Math.sin((Math.PI * 2) / 3) * this.colorTriangle.radius
-  //       : minY;
-  //   maxY =
-  //     mouseX <= minX
-  //       ? Math.sin((Math.PI * 2) / 3) * this.colorTriangle.radius
-  //       : maxY;
+    const minX = Math.cos((Math.PI * 2) / 3) * this.triangleRadius;
+    const maxX = this.triangleRadius;
+    let minY = (mouseX - maxX) / Math.sqrt(3);
+    let maxY = (-mouseX + maxX) / Math.sqrt(3);
+    minY =
+      mouseX <= minX
+        ? -Math.sin((Math.PI * 2) / 3) * this.triangleRadius
+        : minY;
+    maxY =
+      mouseX <= minX ? Math.sin((Math.PI * 2) / 3) * this.triangleRadius : maxY;
 
-  //   const pointer = this.triangleCircle;
-  //   const $container = $(this.param.container);
-  //   const parentNodeX = $container.offset().left;
-  //   const parentNodeY = $container.offset().top;
-  //   const left = e.clientX - parentNodeX;
-  //   const top = e.clientY - parentNodeY;
+    if (minX < mouseX && mouseX < maxX) {
+      x = mouseX;
+      if (mouseY >= maxY) {
+        y = maxY;
+      } else if (minY >= mouseY) {
+        y = minY;
+      } else {
+        y = mouseY;
+      }
+    } else if (mouseX <= minX) {
+      x = minX;
+      if (maxY <= mouseY) {
+        y = maxY;
+      } else if (mouseY <= minY) {
+        y = minY;
+      } else {
+        y = mouseY;
+      }
+    } else if (maxX <= mouseX) {
+      x = maxX;
+      y = 0;
+    }
 
-  //   if (minX < mouseX && mouseX < maxX) {
-  //     pointer.style.left = `${left}px`;
-  //     if (mouseY >= maxY) {
-  //       pointer.style.top = `${maxY + this.param.size / 2}px`;
-  //     } else if (minY >= mouseY) {
-  //       pointer.style.top = `${minY + this.param.size / 2}px`;
-  //     } else {
-  //       pointer.style.top = `${top}px`;
-  //     }
-  //   } else if (mouseX <= minX) {
-  //     pointer.style.left = `${minX + this.param.size / 2}px`;
-  //     if (maxY <= mouseY) {
-  //       pointer.style.top = `${maxY + this.param.size / 2}px`;
-  //     } else if (mouseY <= minY) {
-  //       pointer.style.top = `${minY + this.param.size / 2}px`;
-  //     } else {
-  //       pointer.style.top = `${top}px`;
-  //     }
-  //   } else if (maxX <= mouseX) {
-  //     pointer.style.left = `${maxX + this.param.size / 2}px`;
-  //     pointer.style.top = `${this.param.size / 2}px`;
-  //   }
+    this._drawCircleTriangle(ctx, x, y);
+    const rgb = this._getRgb(x, y);
+    const hsb = this._rgb2hsb(rgb[0], rgb[1], rgb[2]);
+    this._setHsb(hsb, rgb);
+  }
 
-  //   this.colorTriangle.circlePos.x = pointer.style.left.replace('px', '');
-  //   this.colorTriangle.circlePos.y = pointer.style.top.replace('px', '');
-  //   this._setRgb('#color-triangle-circle');
-  // }
+  _setHsb(hsb, rgb) {
+    this.colorBox1.nativeElement.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+    this.currentColor.emit(rgb);
+    this.drawHue(Math.floor(hsb.h));
+    this.drawSaturation(Math.floor(hsb.s), hsb);
+    this.drawBrightness(Math.floor(hsb.b), hsb);
+  }
 
-  // _setRgb(target) {
-  //   const rgb = this._getTriangleColor();
-  //   const r = rgb[0];
-  //   const g = rgb[1];
-  //   const b = rgb[2];
+  _getRgb(circleX, circleY) {
+    const rgb = this._getTriangleColor(circleX, circleY);
+    return rgb;
+  }
 
-  //   this.param.color.rgb = [r, g, b];
-  //   $(target).css('background-color', `rgb(${r},${g},${b})`);
-  // }
+  _getTriangleColor(circleX, circleY) {
+    const x = circleX;
+    const y = circleY;
+    const leftTopX = Math.cos((Math.PI * 2) / 3) * this.triangleRadius;
+    const leftTopY = Math.sin((Math.PI * 2) / 3) * this.triangleRadius;
+    const a =
+      -Math.tan(Math.PI / 6) * x -
+      y -
+      leftTopY +
+      Math.tan(Math.PI / 6) * leftTopX;
+    const k = Math.abs(a) * Math.sin(Math.PI / 3);
+    const l = (this.triangleRadius * 3) / 2;
 
-  // _getRgba(x, y) {
-  //   const ctx = this.triangleCtx;
-  //   const imagedata = ctx.getImageData(x, y, 1, 1);
-  //   const r = imagedata.data[0];
-  //   const g = imagedata.data[1];
-  //   const b = imagedata.data[2];
-  //   const a = imagedata.data[3];
+    const hsl = [this.hue / 360, 1.0, 0.5];
+    const b = this._hsl2rgb(hsl);
+    const s = [255, 255, 255];
 
-  //   return [r, g, b, a];
-  // }
+    const co = [];
+    let tmp;
+    for (let i = 0; i < 3; i++) {
+      tmp = (s[i] * (l - k)) / l + (b[i] * (l - (this.triangleRadius - x))) / l;
+      tmp = Math.abs(Math.round(tmp));
+      co.push(tmp);
+    }
 
-  // _getTriangleColor() {
-  //   const x = this.colorTriangle.circlePos.x - this.param.size / 2;
-  //   const y = this.colorTriangle.circlePos.y - this.param.size / 2;
-  //   const leftTopX = Math.cos((Math.PI * 2) / 3) * this.colorTriangle.radius;
-  //   const leftTopY = Math.sin((Math.PI * 2) / 3) * this.colorTriangle.radius;
-  //   const a =
-  //     -Math.tan(Math.PI / 6) * x - y - leftTopY + Math.tan(Math.PI / 6) * leftTopX;
-  //   const k = Math.abs(a) * Math.sin(Math.PI / 3);
-  //   const l = (this.colorTriangle.radius * 3) / 2;
+    return co;
+  }
 
-  //   const hsl = [this.param.color.hue / 360, 1.0, 0.5];
-  //   const b = LibEve.hsl2rgb(hsl);
-  //   const s = [255, 255, 255];
+  _hsl2rgb(hsl) {
+    let r;
+    let g;
+    let b;
 
-  //   const co = [];
-  //   let tmp;
-  //   for (let i = 0; i < 3; i++) {
-  //     tmp =
-  //       (s[i] * (l - k)) / l +
-  //       (b[i] * (l - (this.colorTriangle.radius - x))) / l;
-  //     tmp = Math.abs(Math.round(tmp));
-  //     co.push(tmp);
-  //   }
+    function __hue2rgb(p, q, t) {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
 
-  //   return co;
-  // }
+      return p;
+    }
+
+    if (hsl[1] === 0) {
+      r = 1;
+      g = 1;
+      b = hsl[2];
+    } else {
+      const q =
+        hsl[2] < 0.5
+          ? hsl[2] * (1 + hsl[1])
+          : hsl[2] + hsl[1] - hsl[2] * hsl[1];
+      const p = 2 * hsl[2] - q;
+      r = __hue2rgb(p, q, hsl[0] + 1 / 3);
+      g = __hue2rgb(p, q, hsl[0]);
+      b = __hue2rgb(p, q, hsl[0] - 1 / 3);
+    }
+
+    return [
+      Math.min(Math.floor(r * 256), 255),
+      Math.min(Math.floor(g * 256), 255),
+      Math.min(Math.floor(b * 256), 255)
+    ];
+  }
+
+  _rgb2hsb(r, g, b) {
+    let rabs, gabs, babs, rr, gg, bb, h, s, v, diff, diffc, percentRoundFn;
+    rabs = r / 255;
+    gabs = g / 255;
+    babs = b / 255;
+    (v = Math.max(rabs, gabs, babs)), (diff = v - Math.min(rabs, gabs, babs));
+    diffc = c => (v - c) / 6 / diff + 1 / 2;
+    percentRoundFn = num => Math.round(num * 100) / 100;
+    if (diff == 0) {
+      h = s = 0;
+    } else {
+      s = diff / v;
+      rr = diffc(rabs);
+      gg = diffc(gabs);
+      bb = diffc(babs);
+
+      if (rabs === v) {
+        h = bb - gg;
+      } else if (gabs === v) {
+        h = 1 / 3 + rr - bb;
+      } else if (babs === v) {
+        h = 2 / 3 + gg - rr;
+      }
+      if (h < 0) {
+        h += 1;
+      } else if (h > 1) {
+        h -= 1;
+      }
+    }
+    return {
+      h: Math.round(h * 360),
+      s: percentRoundFn(s * 100),
+      b: percentRoundFn(v * 100)
+    };
+  }
 }

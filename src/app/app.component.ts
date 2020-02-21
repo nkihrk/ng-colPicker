@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, ViewChild, ElementRef } from "@angular/core";
 import { ViewEncapsulation } from "@angular/core";
 
 @Component({
@@ -8,5 +8,9 @@ import { ViewEncapsulation } from "@angular/core";
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent {
-  title = "angular-template";
+  @ViewChild("container", { static: true }) container: ElementRef;
+
+  setBgColor($event) {
+    this.container.nativeElement.style.backgroundColor = `rgb(${$event[0]}, ${$event[1]}, ${$event[2]})`;
+  }
 }
