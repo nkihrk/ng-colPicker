@@ -17,10 +17,10 @@ export class EventDirective {
     const clientX = evt.touches[0].clientX;
     const clientY = evt.touches[0].clientY;
 
-    const isTriangleCanvas: boolean = !!evt.target.closest("#color-triangle");
-    if (isTriangleCanvas) {
+    const isCircleCanvas: boolean = !!evt.target.closest("#color-circle");
+    if (isCircleCanvas) {
       this.downFlg = true;
-      this.coord.emit({ x: clientX, y: clientY });
+      this.coord.emit({ x: clientX, y: clientY, downFlg: this.downFlg });
     }
   }
 
@@ -28,12 +28,8 @@ export class EventDirective {
     evt.preventDefault();
     evt.stopPropagation();
 
-    const clientX = evt.touches[0].clientX;
-    const clientY = evt.touches[0].clientY;
-
     if (this.downFlg) {
       this.downFlg = false;
-      this.coord.emit({ x: clientX, y: clientY });
     }
   }
 
@@ -41,11 +37,11 @@ export class EventDirective {
     evt.preventDefault();
     evt.stopPropagation();
 
-    const clientX = evt.clientX;
-    const clientY = evt.clientY;
+    const clientX = evt.touches[0].clientX;
+    const clientY = evt.touches[0].clientY;
 
     if (this.downFlg) {
-      this.coord.emit({ x: clientX, y: clientY });
+      this.coord.emit({ x: clientX, y: clientY, downFlg: this.downFlg });
     }
   }
 
@@ -56,10 +52,10 @@ export class EventDirective {
     const clientX = evt.clientX;
     const clientY = evt.clientY;
 
-    const isTriangleCanvas: boolean = !!evt.target.closest("#color-triangle");
-    if (isTriangleCanvas) {
+    const isCircleCanvas: boolean = !!evt.target.closest("#color-circle");
+    if (isCircleCanvas) {
       this.downFlg = true;
-      this.coord.emit({ x: clientX, y: clientY });
+      this.coord.emit({ x: clientX, y: clientY, downFlg: this.downFlg });
     }
   }
 
@@ -72,7 +68,7 @@ export class EventDirective {
 
     if (this.downFlg) {
       this.downFlg = false;
-      this.coord.emit({ x: clientX, y: clientY });
+      this.coord.emit({ x: clientX, y: clientY, downFlg: this.downFlg });
     }
   }
 
@@ -86,7 +82,7 @@ export class EventDirective {
     const clientY = evt.clientY;
 
     if (this.downFlg) {
-      this.coord.emit({ x: clientX, y: clientY });
+      this.coord.emit({ x: clientX, y: clientY, downFlg: this.downFlg });
     }
   }
 }

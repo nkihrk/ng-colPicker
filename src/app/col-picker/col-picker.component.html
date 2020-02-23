@@ -21,46 +21,61 @@
       <div class="selected-color">
         <div #colorBox1 class="color-box-1"></div>
         <div class="box-selected-1"></div>
-        <div class="color-box-2"></div>
+        <div #colorBox2 class="color-box-2"></div>
         <div class="box-selected-2"></div>
       </div>
       <div class="sliders">
         <div class="slider">
           <div class="slider-title">H</div>
-          <div #sliderColor class="slider-color">
+          <div #colorSlider class="slider-color">
             <canvas #canvasH></canvas>
           </div>
-          <div class="slider-value"><input #inputH type="text" />&nbsp;°</div>
+          <div class="slider-value">
+            <input
+              #inputH
+              type="number"
+              (input)="changeInputHue($event)"
+            />&nbsp;°
+          </div>
         </div>
         <div class="slider">
           <div class="slider-title">S</div>
           <div class="slider-color">
             <canvas #canvasS></canvas>
           </div>
-          <div class="slider-value"><input #inputS type="text" />&nbsp;%</div>
+          <div class="slider-value">
+            <input
+              #inputS
+              type="number"
+              (input)="changeInputSaturation($event)"
+            />&nbsp;%
+          </div>
         </div>
         <div class="slider">
           <div class="slider-title">B</div>
           <div class="slider-color">
             <canvas #canvasB></canvas>
           </div>
-          <div class="slider-value"><input #inputB type="text" />&nbsp;%</div>
+          <div class="slider-value"><input #inputB type="number" />&nbsp;%</div>
         </div>
       </div>
     </div>
-    <div #colpick class="color-picker">
+    <div #wrapper class="color-picker">
       <svg
         #colorWheel
         class="color-wheel"
         viewbox="0 0 200 200"
         version="1.1"
       ></svg>
+      <canvas #colorTriangle class="color-canvas"></canvas>
       <canvas
-        #colorTriangle
-        id="color-triangle"
-        class="color-triangle"
+        #colorCircle
+        id="color-circle"
+        class="color-canvas"
+        (document:mouseup)="clearFlg($event)"
+        (touchend)="clearFlg($event)"
         appEvent
-        (coord)="drawTriangle($event)"
+        (coord)="drawCircle($event)"
       ></canvas>
     </div>
   </div>
