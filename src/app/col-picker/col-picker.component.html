@@ -72,8 +72,8 @@
         #colorCircle
         id="color-circle"
         class="color-canvas"
-        (document:mouseup)="clearFlg($event)"
-        (touchend)="clearFlg($event)"
+        (document:mouseup)="clearFlg()"
+        (touchend)="clearFlg()"
         appEvent
         (coord)="drawCircle($event)"
       ></canvas>
