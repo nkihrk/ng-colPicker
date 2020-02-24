@@ -11,6 +11,6 @@ export class AppComponent {
   @ViewChild("container", { static: true }) container: ElementRef;
 
   setBgColor($event) {
-    this.container.nativeElement.style.backgroundColor = `rgb(${$event[0]}, ${$event[1]}, ${$event[2]})`;
+    this.container.nativeElement.style.backgroundColor = `rgb(${$event.r}, ${$event.g}, ${$event.b})`;
   }
 }

@@ -33,7 +33,7 @@
           <div class="slider-value">
             <input
               #inputH
-              type="number"
+              type="text"
               (input)="changeInputHue($event)"
             />&nbsp;°
           </div>
@@ -46,7 +46,7 @@
           <div class="slider-value">
             <input
               #inputS
-              type="number"
+              type="text"
               (input)="changeInputSaturation($event)"
             />&nbsp;%
           </div>
@@ -56,7 +56,7 @@
           <div class="slider-color">
             <canvas #canvasB></canvas>
           </div>
-          <div class="slider-value"><input #inputB type="number" />&nbsp;%</div>
+          <div class="slider-value"><input #inputB type="text" />&nbsp;%</div>
         </div>
       </div>
     </div>
@@ -72,8 +72,8 @@
         #colorCircle
         id="color-circle"
         class="color-canvas"
-        (document:mouseup)="clearFlg()"
-        (touchend)="clearFlg()"
+        (document:mouseup)="clearFlg($event)"
+        (touchend)="clearFlg($event)"
         appEvent
         (coord)="drawCircle($event)"
       ></canvas>

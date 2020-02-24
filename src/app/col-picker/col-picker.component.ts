@@ -46,7 +46,11 @@ export class ColPickerComponent implements OnInit {
 
   private hue: number = 0;
   private saturation: number = 0;
-  private brightness: number = 100;
+  private brightness: number = 14;
+  private rgb: { r: number; g: number; b: number };
+
+  private saturationInput;
+  private brightnessInput;
 
   private wrapperWidth: number;
   private wheelOuterRadius: number;
@@ -84,151 +88,9 @@ export class ColPickerComponent implements OnInit {
     this.centerX = centerX;
     this.centerY = centerY;
 
-    this.drawHue();
-    this.drawSaturation();
-    this.drawBrightness();
     this.drawWheel();
     this.drawTriangle();
     this.drawCircle({});
-  }
-
-  changeInputHue($val) {
-    const input = $val.target.value;
-    const isValid = 0 <= input && input < 360;
-
-    if (isValid) {
-      this.hue = Math.round(input);
-      this.updateCircleWheelViaInput();
-    }
-  }
-
-  changeInputSaturation($val) {
-    const input = $val.target.value;
-    const isValid = 0 <= input && input <= 100;
-
-    if (isValid) {
-      this.saturation = Math.round(input);
-      this.updateCircleSaturateViaInput();
-    }
-  }
-
-  changeInputBrightness($val) {
-    this.brightness = Math.round($val);
-  }
-
-  drawHue() {
-    const c = this.canvasH.nativeElement;
-    c.width = this.colorSlider.nativeElement.clientWidth;
-    c.height = this.colorSlider.nativeElement.clientHeight;
-    const ctx = c.getContext("2d");
-
-    const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
-    grd.addColorStop(0, "rgb(255,   0,   0)");
-    grd.addColorStop(0.15, "rgb(255, 255,   0)");
-    grd.addColorStop(0.33, "rgb(0,   255,   0)");
-    grd.addColorStop(0.49, "rgb(0,   255, 255)");
-    grd.addColorStop(0.67, "rgb(0,     0, 255)");
-    grd.addColorStop(0.84, "rgb(255,   0, 255)");
-    grd.addColorStop(1, "rgb(255,   0,   0)");
-    ctx.fillStyle = grd;
-    ctx.fillRect(5, 3, c.width - 10, 6);
-
-    const pos: number = (this.hue / 360) * (c.width - 12) + 6;
-    this._showArrowBar(ctx, pos);
-
-    this.inputH.nativeElement.value = Math.round(this.hue);
-  }
-
-  drawSaturation() {
-    const c = this.canvasS.nativeElement;
-    c.width = this.colorSlider.nativeElement.clientWidth;
-    c.height = this.colorSlider.nativeElement.clientHeight;
-    const ctx = c.getContext("2d");
-
-    const hsl0 = this.libService.hsv2hsl(
-      this.hue / 360,
-      1,
-      this.brightness / 100
-    );
-    const hsl1 = this.libService.hsv2hsl(
-      this.hue / 360,
-      0,
-      this.brightness / 100
-    );
-    const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
-    grd.addColorStop(
-      1,
-      `hsl(${Math.round(hsl0[0] * 360)}, ${Math.round(
-        hsl0[1] * 100
-      )}%, ${Math.round(hsl0[2] * 100)}%)`
-    );
-    grd.addColorStop(
-      0,
-      `hsl(${Math.round(hsl1[0] * 360)}, ${Math.round(
-        hsl1[1] * 100
-      )}%, ${Math.round(hsl1[2] * 100)}%)`
-    );
-    ctx.fillStyle = grd;
-    ctx.fillRect(5, 3, c.width - 10, 6);
-
-    const pos: number = (this.saturation / 100) * (c.width - 13) + 6;
-    this._showArrowBar(ctx, pos);
-
-    this.inputS.nativeElement.value = Math.round(this.saturation);
-  }
-
-  drawBrightness() {
-    const c = this.canvasB.nativeElement;
-    c.width = this.colorSlider.nativeElement.clientWidth;
-    c.height = this.colorSlider.nativeElement.clientHeight;
-    const ctx = c.getContext("2d");
-
-    const hsl0 = this.libService.hsv2hsl(
-      this.hue / 360,
-      this.saturation / 100,
-      1
-    );
-    const hsl1 = this.libService.hsv2hsl(
-      this.hue / 360,
-      this.saturation / 100,
-      0
-    );
-    const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
-    grd.addColorStop(
-      1,
-      `hsl(${Math.round(hsl0[0] * 360)}, ${Math.round(
-        hsl0[1] * 100
-      )}%, ${Math.round(hsl0[2] * 100)}%)`
-    );
-    grd.addColorStop(
-      0,
-      `hsl(${Math.round(hsl1[0] * 360)}, ${Math.round(
-        hsl1[1] * 100
-      )}%, ${Math.round(hsl1[2] * 100)}%)`
-    );
-    ctx.fillStyle = grd;
-    ctx.fillRect(5, 3, c.width - 10, 6);
-
-    const pos: number = (this.brightness / 100) * (c.width - 13) + 6;
-    this._showArrowBar(ctx, pos);
-
-    this.inputB.nativeElement.value = Math.round(this.brightness);
-  }
-
-  _showArrowBar(ctx: any, pos: number) {
-    ctx.beginPath();
-    ctx.moveTo(pos, 10);
-    ctx.lineTo(pos - 5, 16);
-    ctx.lineTo(pos - 5, 19);
-    ctx.lineTo(pos - 4, 20);
-    ctx.lineTo(pos + 4, 20);
-    ctx.lineTo(pos + 5, 19);
-    ctx.lineTo(pos + 5, 16);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.strokeStyle = "white";
-    ctx.fillStyle = "white";
-    ctx.fill();
   }
 
   /**
@@ -385,65 +247,17 @@ export class ColPickerComponent implements OnInit {
     ctx.restore();
   }
 
-  /**
-   * Show circle
-   *
-   */
-  drawCircle($coord) {
-    const c = this.circle.nativeElement;
-    c.width = this.wrapperWidth;
-    c.height = this.wrapperWidth;
-    const ctx = c.getContext("2d");
+  changeInputHue($val) {
+    const input = parseFloat($val.target.value);
+    const isValid = 0 <= input && input <= 360;
 
-    const leftTopX = Math.cos((Math.PI * 2) / 3) * this.triangleRadius;
-    const leftTopY = Math.sin((Math.PI * 2) / 3) * this.triangleRadius;
-
-    const isWheelArea = this._isWheelArea($coord);
-    const isTriangleArea = this._isTriangleArea($coord);
-
-    ctx.translate(this.wheelOuterRadius, this.wheelOuterRadius);
-
-    if (Object.keys($coord).length) {
-      // Wheel
-      if (isWheelArea && !this.isTriangle) {
-        this.wCirclePos = $coord;
-        this.isWheel = true;
-      } else if (this.isWheel && !this.isTriangle) {
-        this.wCirclePos = $coord;
-      }
-      this._updateCircleWheel(ctx, this.wCirclePos);
-
-      // Triangle
-      if (isTriangleArea && !this.isWheel) {
-        this.tCirclePos = $coord;
-        this.isTriangle = true;
-      } else if (this.isTriangle && !this.isWheel) {
-        this.tCirclePos = $coord;
-      }
-      this._updateCircleTriangle(ctx, this.tCirclePos);
-    } else {
-      // Wheel
-      const initPosX =
-        this.wheelOuterRadius +
-        this.wheelInnerRadius +
-        this.thickness / 2 +
-        this.circle.nativeElement.getBoundingClientRect().left;
-      const initPosY =
-        this.wheelOuterRadius +
-        this.circle.nativeElement.getBoundingClientRect().top;
-      this.wCirclePos = {
-        x: initPosX,
-        y: initPosY
-      };
-      this._updateCircleWheel(ctx, this.wCirclePos);
-
-      // Triangle
-      this.tCirclePos = { x: leftTopX, y: -leftTopY };
-      this._updateCircleTriangle(ctx, this.tCirclePos);
+    if (isValid) {
+      this.hue = Math.round(input);
+      this._updateCircleWheelViaInput();
     }
   }
 
-  updateCircleWheelViaInput() {
+  _updateCircleWheelViaInput() {
     const c = this.circle.nativeElement;
     c.width = this.wrapperWidth;
     c.height = this.wrapperWidth;
@@ -471,7 +285,17 @@ export class ColPickerComponent implements OnInit {
     this._updateCircleTriangle(ctx, this.tCirclePos);
   }
 
-  updateCircleSaturateViaInput() {
+  changeInputSaturation($val) {
+    const input = parseFloat($val.target.value);
+    const isValid = 0 <= input && input <= 100;
+
+    if (isValid) {
+      this.saturationInput = Math.round(input);
+      this._updateCircleSaturateViaInput();
+    }
+  }
+
+  _updateCircleSaturateViaInput() {
     const leftTopXFromCenterX =
       Math.cos((Math.PI * 2) / 3) * this.triangleRadius;
     const leftTopYFromCenterY =
@@ -497,19 +321,24 @@ export class ColPickerComponent implements OnInit {
 
     const resultPos = {
       x:
-        ((100 - this.saturation) * intersectA.x +
-          this.saturation * intersectB.x) /
+        ((100 - this.saturationInput) * intersectA.x +
+          this.saturationInput * intersectB.x) /
           100 +
         this.wrapper.nativeElement.getBoundingClientRect().left,
       y:
-        ((100 - this.saturation) * intersectA.y +
-          this.saturation * intersectB.y) /
+        ((100 - this.saturationInput) * intersectA.y +
+          this.saturationInput * intersectB.y) /
           100 +
         this.wrapper.nativeElement.getBoundingClientRect().top
     };
 
     this.drawCircle(resultPos);
-    this.clearFlg();
+    this.clearFlg({});
+  }
+
+  clearFlg(e) {
+    this.isWheel = false;
+    this.isTriangle = false;
   }
 
   _fixedPosTriangleArea(pos) {
@@ -552,53 +381,197 @@ export class ColPickerComponent implements OnInit {
     }
 
     return {
-      x: x + this.wrapper.nativeElement.getBoundingClientRect().left,
-      y: y + this.wrapper.nativeElement.getBoundingClientRect().top
+      x: x + this.wheelOuterRadius,
+      y: y + this.wheelOuterRadius
     };
   }
 
-  clearFlg() {
-    this.isWheel = false;
-    this.isTriangle = false;
+  changeInputBrightness($val) {
+    const input = parseFloat($val.target.value);
+    const isValid = 0 <= input && input <= 100;
+
+    if (isValid) {
+      this.brightnessInput = Math.round(input);
+    }
   }
 
-  _updateCircleWheel(ctx, pos) {
-    const wheelX = pos.x - this.centerX;
-    const wheelY = pos.y - this.centerY;
-    const wheelR = this.wheelInnerRadius + this.thickness / 2;
-    const wheelTheta = this.libService.calcurateTheta(wheelX, wheelY);
-    const invertReg = this.libService.calcurateInvertDeg(wheelX, wheelY);
-    const wheelResultX = wheelR * Math.cos(wheelTheta);
-    const wheelResultY = wheelR * Math.sin(wheelTheta);
-    this._drawCircleWheel(ctx, wheelResultX, wheelResultY);
-    this.hue = this._getHue(invertReg);
+  _drawHue() {
+    const c = this.canvasH.nativeElement;
+    c.width = this.colorSlider.nativeElement.clientWidth;
+    c.height = this.colorSlider.nativeElement.clientHeight;
+    const ctx = c.getContext("2d");
 
-    this.drawTriangle();
-    this.drawHue();
-    this.drawBrightness();
-    this.drawSaturation();
+    const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
+    grd.addColorStop(0, "rgb(255,   0,   0)");
+    grd.addColorStop(0.15, "rgb(255, 255,   0)");
+    grd.addColorStop(0.33, "rgb(0,   255,   0)");
+    grd.addColorStop(0.49, "rgb(0,   255, 255)");
+    grd.addColorStop(0.67, "rgb(0,     0, 255)");
+    grd.addColorStop(0.84, "rgb(255,   0, 255)");
+    grd.addColorStop(1, "rgb(255,   0,   0)");
+    ctx.fillStyle = grd;
+    ctx.fillRect(5, 3, c.width - 10, 6);
+
+    const pos: number = (this.hue / 360) * (c.width - 12) + 6;
+    this._showArrowBar(ctx, pos);
+
+    this.inputH.nativeElement.value = Math.round(this.hue);
   }
 
-  _getHue(deg) {
-    let result = Math.round(deg);
-    return result === 360 ? 0 : result;
+  _drawSaturation() {
+    const c = this.canvasS.nativeElement;
+    c.width = this.colorSlider.nativeElement.clientWidth;
+    c.height = this.colorSlider.nativeElement.clientHeight;
+    const ctx = c.getContext("2d");
+
+    const hsl0 = this.libService.hsv2hsl(
+      this.hue / 360,
+      1,
+      this.brightness / 100
+    );
+    const hsl1 = this.libService.hsv2hsl(
+      this.hue / 360,
+      0,
+      this.brightness / 100
+    );
+    const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
+    grd.addColorStop(
+      1,
+      `hsl(${Math.round(hsl0[0] * 360)}, ${Math.round(
+        hsl0[1] * 100
+      )}%, ${Math.round(hsl0[2] * 100)}%)`
+    );
+    grd.addColorStop(
+      0,
+      `hsl(${Math.round(hsl1[0] * 360)}, ${Math.round(
+        hsl1[1] * 100
+      )}%, ${Math.round(hsl1[2] * 100)}%)`
+    );
+    ctx.fillStyle = grd;
+    ctx.fillRect(5, 3, c.width - 10, 6);
+
+    const pos: number = (this.saturation / 100) * (c.width - 13) + 6;
+    this._showArrowBar(ctx, pos);
+
+    this.inputS.nativeElement.value = Math.round(this.saturation);
   }
 
-  _drawCircleWheel(ctx, mouseX, mouseY) {
-    ctx.save();
+  _drawBrightness() {
+    const c = this.canvasB.nativeElement;
+    c.width = this.colorSlider.nativeElement.clientWidth;
+    c.height = this.colorSlider.nativeElement.clientHeight;
+    const ctx = c.getContext("2d");
+
+    const hsl0 = this.libService.hsv2hsl(
+      this.hue / 360,
+      this.saturation / 100,
+      1
+    );
+    const hsl1 = this.libService.hsv2hsl(
+      this.hue / 360,
+      this.saturation / 100,
+      0
+    );
+    const grd = ctx.createLinearGradient(5, 3, c.width - 10, 6);
+    grd.addColorStop(
+      1,
+      `hsl(${Math.round(hsl0[0] * 360)}, ${Math.round(
+        hsl0[1] * 100
+      )}%, ${Math.round(hsl0[2] * 100)}%)`
+    );
+    grd.addColorStop(
+      0,
+      `hsl(${Math.round(hsl1[0] * 360)}, ${Math.round(
+        hsl1[1] * 100
+      )}%, ${Math.round(hsl1[2] * 100)}%)`
+    );
+    ctx.fillStyle = grd;
+    ctx.fillRect(5, 3, c.width - 10, 6);
+
+    const pos: number = (this.brightness / 100) * (c.width - 13) + 6;
+    this._showArrowBar(ctx, pos);
+
+    this.inputB.nativeElement.value = Math.round(this.brightness);
+  }
+
+  _showArrowBar(ctx: any, pos: number) {
     ctx.beginPath();
+    ctx.moveTo(pos, 10);
+    ctx.lineTo(pos - 5, 16);
+    ctx.lineTo(pos - 5, 19);
+    ctx.lineTo(pos - 4, 20);
+    ctx.lineTo(pos + 4, 20);
+    ctx.lineTo(pos + 5, 19);
+    ctx.lineTo(pos + 5, 16);
+    ctx.closePath();
+    ctx.stroke();
     ctx.strokeStyle = "white";
-    ctx.arc(mouseX, mouseY, 6, 0, 2 * Math.PI);
-    ctx.stroke();
-    ctx.restore();
+    ctx.fillStyle = "white";
+    ctx.fill();
   }
 
-  _drawCircleTriangle(ctx, mouseX, mouseY) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(mouseX, mouseY, 5, 0, 2 * Math.PI);
-    ctx.stroke();
-    ctx.restore();
+  /**
+   * Circle symbol
+   *
+   */
+  drawCircle($coord) {
+    const c = this.circle.nativeElement;
+    c.width = this.wrapperWidth;
+    c.height = this.wrapperWidth;
+    const ctx = c.getContext("2d");
+
+    const leftTopX = Math.cos((Math.PI * 2) / 3) * this.triangleRadius;
+    const leftTopY = Math.sin((Math.PI * 2) / 3) * this.triangleRadius;
+
+    const isWheelArea = this._isWheelArea($coord);
+    const isTriangleArea = this._isTriangleArea($coord);
+
+    ctx.translate(this.wheelOuterRadius, this.wheelOuterRadius);
+
+    if (Object.keys($coord).length) {
+      // Wheel
+      if (isWheelArea && !this.isTriangle) {
+        this.wCirclePos = $coord;
+        this.isWheel = true;
+      } else if (this.isWheel && !this.isTriangle) {
+        this.wCirclePos = $coord;
+      }
+      this._updateCircleWheel(ctx, this.wCirclePos);
+
+      // Triangle
+      if (isTriangleArea && !this.isWheel) {
+        this.tCirclePos = $coord;
+        this.isTriangle = true;
+      } else if (this.isTriangle && !this.isWheel) {
+        this.tCirclePos = $coord;
+      }
+      this._updateCircleTriangle(ctx, this.tCirclePos);
+
+      this._updateAllCanvas();
+      this._updateRgbInfo();
+    } else {
+      // Wheel
+      const initPosX =
+        this.wheelOuterRadius +
+        this.wheelInnerRadius +
+        this.thickness / 2 +
+        this.circle.nativeElement.getBoundingClientRect().left;
+      const initPosY =
+        this.wheelOuterRadius +
+        this.circle.nativeElement.getBoundingClientRect().top;
+      this.wCirclePos = {
+        x: initPosX,
+        y: initPosY
+      };
+      this._updateCircleWheel(ctx, this.wCirclePos);
+
+      // Triangle
+      this.tCirclePos = { x: leftTopX, y: -leftTopY };
+      this._updateCircleTriangle(ctx, this.tCirclePos);
+
+      this._updateAllCanvas();
+      this._updateRgbInfo();
+    }
   }
 
   _isWheelArea(pos) {
@@ -615,19 +588,6 @@ export class ColPickerComponent implements OnInit {
     return false;
   }
 
-  _isTriangleArea(pos) {
-    const mouseX = pos.x - this.centerX;
-    const mouseY = pos.y - this.centerY;
-    const minX = Math.cos((Math.PI * 2) / 3) * this.wheelInnerRadius;
-    const maxX = this.wheelInnerRadius;
-    const maxY = (-mouseX + maxX) / Math.sqrt(3);
-
-    if (mouseX > minX && maxX > mouseX) {
-      if (Math.abs(mouseY) >= 0 && maxY >= Math.abs(mouseY)) return true;
-    }
-    return false;
-  }
-
   _isInnerWheelArea(pos) {
     const maxR = this.wheelInnerRadius;
     const mouseR = this.libService.getDistance(
@@ -639,6 +599,68 @@ export class ColPickerComponent implements OnInit {
 
     if (mouseR < maxR) return true;
     return false;
+  }
+
+  _isTriangleArea(pos) {
+    const mouseX = pos.x - this.centerX;
+    const mouseY = pos.y - this.centerY;
+    const minX = Math.cos((Math.PI * 2) / 3) * this.wheelInnerRadius;
+    const maxX = this.wheelInnerRadius;
+    const maxY = (-mouseX + maxX) / Math.sqrt(3);
+
+    if (mouseX >= minX && maxX >= mouseX) {
+      if (Math.abs(mouseY) >= 0 && maxY >= Math.abs(mouseY)) return true;
+    }
+    return false;
+  }
+
+  _updateCircleWheel(ctx, pos) {
+    const wheelX = pos.x - this.centerX;
+    const wheelY = pos.y - this.centerY;
+    const wheelR = this.wheelInnerRadius + this.thickness / 2;
+    const wheelTheta = this.libService.calcurateTheta(wheelX, wheelY);
+    const invertDeg = this.libService.calcurateInvertDeg(wheelX, wheelY);
+    const wheelResultX = wheelR * Math.cos(wheelTheta);
+    const wheelResultY = wheelR * Math.sin(wheelTheta);
+
+    this._drawCircleWheel(ctx, wheelResultX, wheelResultY);
+    this._setHue(invertDeg);
+  }
+
+  _drawCircleWheel(ctx, mouseX, mouseY) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.strokeStyle = "white";
+    ctx.arc(mouseX, mouseY, 6, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  _setHue($deg) {
+    this.hue = this._getHue($deg);
+  }
+
+  _getHue($deg) {
+    let result = Math.round($deg);
+    return result === 360 ? 0 : result;
+  }
+
+  _updateAllCanvas() {
+    this.drawTriangle();
+    this._drawHue();
+    this._drawSaturation();
+    this._drawBrightness();
+    this._initInput();
+  }
+
+  _initInput() {
+    this.saturationInput = null;
+    this.brightnessInput = null;
+  }
+
+  _updateRgbInfo() {
+    this.colorBox1.nativeElement.style.backgroundColor = `rgb(${this.rgb.r}, ${this.rgb.g}, ${this.rgb.b})`;
+    this.currentColor.emit(this.rgb);
   }
 
   _updateCircleTriangle(ctx, pos) {
@@ -681,25 +703,21 @@ export class ColPickerComponent implements OnInit {
     }
 
     this._drawCircleTriangle(ctx, x, y);
-    const rgb = this._getTriangleColor(x, y);
-    this._setSaturateAndBright(rgb);
+    this.rgb = this._getTriangleColor(x, y);
+    this._setSaturateAndBright();
   }
 
-  _setSaturateAndBright(rgb) {
-    const hsb = this.libService.rgb2hsb(rgb[0], rgb[1], rgb[2]);
-    this.colorBox1.nativeElement.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-    this.currentColor.emit(rgb);
-
-    this.saturation = hsb.s;
-    this.brightness = hsb.b;
-
-    this.drawSaturation();
-    this.drawBrightness();
+  _drawCircleTriangle(ctx, mouseX, mouseY) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(mouseX, mouseY, 5, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.restore();
   }
 
-  _getTriangleColor(circleX, circleY) {
-    const x = circleX;
-    const y = circleY;
+  _getTriangleColor($circleX, $circleY) {
+    const x = $circleX;
+    const y = $circleY;
     const leftTopX = Math.cos((Math.PI * 2) / 3) * this.triangleRadius;
     const leftTopY = Math.sin((Math.PI * 2) / 3) * this.triangleRadius;
     const a =
@@ -722,6 +740,17 @@ export class ColPickerComponent implements OnInit {
       co.push(tmp);
     }
 
-    return co;
+    return {
+      r: co[0],
+      g: co[1],
+      b: co[2]
+    };
+  }
+
+  _setSaturateAndBright() {
+    const hsb = this.libService.rgb2hsb(this.rgb.r, this.rgb.g, this.rgb.b);
+
+    this.saturation = !!this.saturationInput ? this.saturationInput : hsb.s;
+    this.brightness = !!this.brightnessInput ? this.brightnessInput : hsb.b;
   }
 }
