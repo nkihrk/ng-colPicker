@@ -56,7 +56,13 @@
           <div class="slider-color">
             <canvas #canvasB></canvas>
           </div>
-          <div class="slider-value"><input #inputB type="text" />&nbsp;%</div>
+          <div class="slider-value">
+            <input
+              #inputB
+              type="text"
+              (input)="changeInputBrightness($event)"
+            />&nbsp;%
+          </div>
         </div>
       </div>
     </div>

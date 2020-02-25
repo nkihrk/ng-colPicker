@@ -49,8 +49,9 @@ export class ColPickerComponent implements OnInit {
   private brightness: number = 14;
   private rgb: { r: number; g: number; b: number };
 
-  private saturationInput;
-  private brightnessInput;
+  private isSafeInput: boolean = false;
+  private saturationInput: number;
+  private brightnessInput: number;
 
   private wrapperWidth: number;
   private wheelOuterRadius: number;
@@ -247,12 +248,18 @@ export class ColPickerComponent implements OnInit {
     ctx.restore();
   }
 
+  clearFlg(e) {
+    this.isWheel = false;
+    this.isTriangle = false;
+  }
+
   changeInputHue($val) {
     const input = parseFloat($val.target.value);
     const isValid = 0 <= input && input <= 360;
 
     if (isValid) {
       this.hue = Math.round(input);
+      this.isSafeInput = true;
       this._updateCircleWheelViaInput();
     }
   }
@@ -283,6 +290,10 @@ export class ColPickerComponent implements OnInit {
 
     this._updateCircleWheel(ctx, this.wCirclePos);
     this._updateCircleTriangle(ctx, this.tCirclePos);
+    this._setSaturate();
+    this._setBrightness();
+    this._updateAllCanvas();
+    this._updateRgbInfo();
   }
 
   changeInputSaturation($val) {
@@ -290,12 +301,21 @@ export class ColPickerComponent implements OnInit {
     const isValid = 0 <= input && input <= 100;
 
     if (isValid) {
+      this.isSafeInput = true;
       this.saturationInput = Math.round(input);
+      this.brightnessInput = Math.round(this.inputB.nativeElement.value);
       this._updateCircleSaturateViaInput();
     }
   }
 
   _updateCircleSaturateViaInput() {
+    const resultPos = this._calcurateSaturatePos(this.saturationInput);
+
+    this.drawCircle(resultPos);
+    this.clearFlg({});
+  }
+
+  _calcurateSaturatePos($saturationInput) {
     const leftTopXFromCenterX =
       Math.cos((Math.PI * 2) / 3) * this.triangleRadius;
     const leftTopYFromCenterY =
@@ -305,40 +325,31 @@ export class ColPickerComponent implements OnInit {
     const leftDownX = leftTopX;
     const leftDownY = Math.sqrt(3) * this.triangleRadius + leftTopY;
 
-    const prevPos = this._fixedPosTriangleArea(this.tCirclePos);
+    const centerPos = { x: this.wheelOuterRadius, y: this.wheelOuterRadius };
+    const mainSlice1 = centerPos.y - centerPos.x / Math.sqrt(3);
+    const anotherSlice1 = leftDownY + leftDownX / Math.sqrt(3);
 
-    const mainSlice = prevPos.y - prevPos.x / Math.sqrt(3);
-    const anotherSlice = leftDownY + leftDownX / Math.sqrt(3);
-
-    const intersectA = {
+    const intersectA1 = {
       x: leftTopX,
-      y: mainSlice + leftTopX / Math.sqrt(3)
+      y: mainSlice1 + leftTopX / Math.sqrt(3)
     };
-    const intersectB = {
-      x: ((anotherSlice - mainSlice) * Math.sqrt(3)) / 2,
-      y: (anotherSlice + mainSlice) / 2
+    const intersectB1 = {
+      x: ((anotherSlice1 - mainSlice1) * Math.sqrt(3)) / 2,
+      y: (anotherSlice1 + mainSlice1) / 2
     };
 
-    const resultPos = {
+    const resultPos1 = {
       x:
-        ((100 - this.saturationInput) * intersectA.x +
-          this.saturationInput * intersectB.x) /
-          100 +
-        this.wrapper.nativeElement.getBoundingClientRect().left,
+        ((100 - $saturationInput) * intersectA1.x +
+          $saturationInput * intersectB1.x) /
+        100,
       y:
-        ((100 - this.saturationInput) * intersectA.y +
-          this.saturationInput * intersectB.y) /
-          100 +
-        this.wrapper.nativeElement.getBoundingClientRect().top
+        ((100 - $saturationInput) * intersectA1.y +
+          $saturationInput * intersectB1.y) /
+        100
     };
 
-    this.drawCircle(resultPos);
-    this.clearFlg({});
-  }
-
-  clearFlg(e) {
-    this.isWheel = false;
-    this.isTriangle = false;
+    return resultPos1;
   }
 
   _fixedPosTriangleArea(pos) {
@@ -391,8 +402,72 @@ export class ColPickerComponent implements OnInit {
     const isValid = 0 <= input && input <= 100;
 
     if (isValid) {
+      this.isSafeInput = true;
+      this.saturationInput = Math.round(this.inputS.nativeElement.value);
       this.brightnessInput = Math.round(input);
+      this._updateCircleBrightnessViaInput();
     }
+  }
+
+  _updateCircleBrightnessViaInput() {
+    const resultPosS = this._calcurateSaturatePos(this.saturationInput);
+    const resultPosB = this._calcurateBrightPos(
+      this.brightnessInput,
+      resultPosS
+    );
+
+    this.drawCircle(resultPosB);
+    this.clearFlg({});
+  }
+
+  _calcurateBrightPos($brightnessInput, $resultPosS) {
+    const leftTopXFromCenterX =
+      Math.cos((Math.PI * 2) / 3) * this.triangleRadius;
+    const leftTopYFromCenterY =
+      Math.sin((Math.PI * 2) / 3) * this.triangleRadius;
+    const leftTopX = leftTopXFromCenterX + this.wheelOuterRadius;
+    const leftTopY = -leftTopYFromCenterY + this.wheelOuterRadius;
+    const leftDownX = leftTopX;
+    const leftDownY = Math.sqrt(3) * this.triangleRadius + leftTopY;
+
+    const mainSlope = ($resultPosS.y - leftDownY) / ($resultPosS.x - leftDownX);
+    const mainSlice =
+      $resultPosS.y -
+      ($resultPosS.x * ($resultPosS.y - leftDownY)) /
+        ($resultPosS.x - leftDownX);
+    const anotherSlice = leftTopY - leftTopX / Math.sqrt(3);
+    const intersectA = {
+      x: leftDownX,
+      y: leftDownY
+    };
+    const intersectB = {
+      x: (mainSlice - anotherSlice) / (1 / Math.sqrt(3) - mainSlope),
+      y:
+        (mainSlice - anotherSlice) / (1 - Math.sqrt(3) * mainSlope) +
+        anotherSlice
+    };
+
+    const resultPos = {
+      x:
+        ((100 - $brightnessInput) * intersectA.x +
+          $brightnessInput * intersectB.x) /
+          100 +
+        this.wrapper.nativeElement.getBoundingClientRect().left,
+      y:
+        ((100 - $brightnessInput) * intersectA.y +
+          $brightnessInput * intersectB.y) /
+          100 +
+        this.wrapper.nativeElement.getBoundingClientRect().top
+    };
+
+    return resultPos;
+  }
+
+  _setBrightness() {
+    const hsb = this.libService.rgb2hsb(this.rgb.r, this.rgb.g, this.rgb.b);
+    this.brightness = this.isSafeInput
+      ? Math.round(this.inputB.nativeElement.value)
+      : hsb.b;
   }
 
   _drawHue() {
@@ -533,8 +608,10 @@ export class ColPickerComponent implements OnInit {
       if (isWheelArea && !this.isTriangle) {
         this.wCirclePos = $coord;
         this.isWheel = true;
+        this.isSafeInput = true;
       } else if (this.isWheel && !this.isTriangle) {
         this.wCirclePos = $coord;
+        this.isSafeInput = true;
       }
       this._updateCircleWheel(ctx, this.wCirclePos);
 
@@ -546,9 +623,6 @@ export class ColPickerComponent implements OnInit {
         this.tCirclePos = $coord;
       }
       this._updateCircleTriangle(ctx, this.tCirclePos);
-
-      this._updateAllCanvas();
-      this._updateRgbInfo();
     } else {
       // Wheel
       const initPosX =
@@ -568,10 +642,12 @@ export class ColPickerComponent implements OnInit {
       // Triangle
       this.tCirclePos = { x: leftTopX, y: -leftTopY };
       this._updateCircleTriangle(ctx, this.tCirclePos);
-
-      this._updateAllCanvas();
-      this._updateRgbInfo();
     }
+
+    this._setSaturate();
+    this._setBrightness();
+    this._updateAllCanvas();
+    this._updateRgbInfo();
   }
 
   _isWheelArea(pos) {
@@ -656,6 +732,7 @@ export class ColPickerComponent implements OnInit {
   _initInput() {
     this.saturationInput = null;
     this.brightnessInput = null;
+    this.isSafeInput = false;
   }
 
   _updateRgbInfo() {
@@ -704,7 +781,6 @@ export class ColPickerComponent implements OnInit {
 
     this._drawCircleTriangle(ctx, x, y);
     this.rgb = this._getTriangleColor(x, y);
-    this._setSaturateAndBright();
   }
 
   _drawCircleTriangle(ctx, mouseX, mouseY) {
@@ -747,10 +823,10 @@ export class ColPickerComponent implements OnInit {
     };
   }
 
-  _setSaturateAndBright() {
+  _setSaturate() {
     const hsb = this.libService.rgb2hsb(this.rgb.r, this.rgb.g, this.rgb.b);
-
-    this.saturation = !!this.saturationInput ? this.saturationInput : hsb.s;
-    this.brightness = !!this.brightnessInput ? this.brightnessInput : hsb.b;
+    this.saturation = this.isSafeInput
+      ? Math.round(this.inputS.nativeElement.value)
+      : hsb.s;
   }
 }
