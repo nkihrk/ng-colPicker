@@ -10,7 +10,15 @@ import { ViewEncapsulation } from "@angular/core";
 export class AppComponent {
   @ViewChild("container", { static: true }) container: ElementRef;
 
+  public flg: boolean = true;
+  private count: number = 0;
+
   setBgColor($event) {
+    if (this.count === 1) {
+      this.flg = false;
+    } else if (this.count <= 1) {
+      this.count++;
+    }
     this.container.nativeElement.style.backgroundColor = `rgb(${$event.r}, ${$event.g}, ${$event.b})`;
   }
 }
