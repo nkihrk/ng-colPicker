@@ -309,13 +309,16 @@ export class ColPickerComponent implements OnInit {
   }
 
   _updateCircleSaturateViaInput() {
-    const resultPos = this._calcurateSaturatePos(this.saturationInput);
+    const resultPos = this._calcurateSaturatePos(
+      this.saturationInput,
+      this.tCirclePos
+    );
 
     this.drawCircle(resultPos);
     this.clearFlg({});
   }
 
-  _calcurateSaturatePos($saturationInput) {
+  _calcurateSaturatePos($saturationInput, $prevPos) {
     const leftTopXFromCenterX =
       Math.cos((Math.PI * 2) / 3) * this.triangleRadius;
     const leftTopYFromCenterY =
@@ -325,8 +328,8 @@ export class ColPickerComponent implements OnInit {
     const leftDownX = leftTopX;
     const leftDownY = Math.sqrt(3) * this.triangleRadius + leftTopY;
 
-    const centerPos = { x: this.wheelOuterRadius, y: this.wheelOuterRadius };
-    const mainSlice1 = centerPos.y - centerPos.x / Math.sqrt(3);
+    const pos = this._fixedPosTriangleArea($prevPos);
+    const mainSlice1 = pos.y - pos.x / Math.sqrt(3);
     const anotherSlice1 = leftDownY + leftDownX / Math.sqrt(3);
 
     const intersectA1 = {
@@ -342,11 +345,13 @@ export class ColPickerComponent implements OnInit {
       x:
         ((100 - $saturationInput) * intersectA1.x +
           $saturationInput * intersectB1.x) /
-        100,
+          100 +
+        this.wrapper.nativeElement.getBoundingClientRect().left,
       y:
         ((100 - $saturationInput) * intersectA1.y +
           $saturationInput * intersectB1.y) /
-        100
+          100 +
+        this.wrapper.nativeElement.getBoundingClientRect().top
     };
 
     return resultPos1;
@@ -410,11 +415,14 @@ export class ColPickerComponent implements OnInit {
   }
 
   _updateCircleBrightnessViaInput() {
-    const resultPosS = this._calcurateSaturatePos(this.saturationInput);
-    const resultPosB = this._calcurateBrightPos(
-      this.brightnessInput,
-      resultPosS
-    );
+    const resultPosS = this._calcurateSaturatePos(this.saturationInput, {
+      x: this.wheelOuterRadius,
+      y: this.wheelOuterRadius
+    });
+    const resultPosB = this._calcurateBrightPos(this.brightnessInput, {
+      x: resultPosS.x - this.wrapper.nativeElement.getBoundingClientRect().left,
+      y: resultPosS.y - this.wrapper.nativeElement.getBoundingClientRect().top
+    });
 
     this.drawCircle(resultPosB);
     this.clearFlg({});
