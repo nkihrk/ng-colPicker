@@ -5,7 +5,7 @@
 <br><a href="https://nkihrk.github.io/ng-colPicker/"><b>DEMO</b></a>
 </p>
 
-![Angular Ruler](./src/assets/gif.png)
+![Angular Ruler](./src/assets/gif.gif)
 <br><br><br>
 # Document
 It is currently under development.
