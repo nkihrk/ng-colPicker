@@ -8,7 +8,7 @@
 ![Angular Ruler](./src/assets/gif.gif)
 <br><br><br>
 # Document
-It is currently under development.
+This project is currently under development.
 <br><br>
 
 # MIT Licence
